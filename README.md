@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Automated Deployment on EC2 Machines using Ansible and Jenkins</title>
+
 </head>
 <body>
   <h1>Automated Deployment on EC2 Machines using Ansible and Jenkins</h1>
