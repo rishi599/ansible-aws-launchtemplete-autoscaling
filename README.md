@@ -1,4 +1,4 @@
-<b>Automated Deployment on EC2 Machines using Ansible and Jenkins</b>
+<b>Automated Deployment on EC2 Machines using Ansible and Jenkins</b></n>
 This project automates the entire deployment process on EC2 machines using an Ansible playbook executed by Jenkins. The automation includes the creation of an AMI and the updating of the launch template within an Auto Scaling group.
 
 Overview
