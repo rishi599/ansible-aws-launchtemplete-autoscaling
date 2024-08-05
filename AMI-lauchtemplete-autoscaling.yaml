@@ -1,0 +1,84 @@
+---
+# Author: Rakesh Kumar
+- name: Create AMI and Launch Template
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  vars:
+    subnets:
+      - subnet-04b796d73aecb3230
+      - subnet-07c86757f46643311
+      - subnet-0528b1734d544a412
+
+  tasks:
+    - name: Create AMI
+      ec2_ami:
+        aws_access_key: ABCCSSS
+        aws_secret_key: DDDI&$**)*($#
+        instance_id: i-1234353535325325155
+        name: "pwa-test-{{ lookup('pipe', 'date +%H-%M-%d-%m-%Y') }}"
+        region: ap-south-1
+        wait: yes
+        no_reboot: yes   # Ensure no reboot occurs
+        tags:
+          Name: "pwa-test-{{ lookup('pipe', 'date +%H-%M-%d-%m-%Y') }}"
+      register: ami_result
+
+    - name: Debug AMI Result
+      debug:
+        var: ami_result
+
+    - name: Update Launch Template with new AMI and instance type
+      ec2_launch_template:
+        aws_access_key: ABCCSSS
+        aws_secret_key: DDDI&$**)*($#
+        name: pwa-test-lt
+        image_id: "{{ ami_result.image_id }}"  # New AMI ID
+        instance_type: m5a.large  # New instance type
+        key_name: test-213 
+        region: ap-south-1
+        instance_market_options:
+          market_type: spot
+          spot_options:
+            max_price: "0.0560"  # Specify your maximum bid price here
+        network_interfaces:
+          - device_index: 0
+            associate_public_ip_address: false
+            delete_on_termination: true
+            subnet_id: subnet-34567212189212  # First subnet ID
+            groups:
+              - sg-121212
+              - sg-4232321
+              - sg-12121
+          
+      register: lt_result
+
+    - name: Debug Launch Template Update Result
+      debug:
+        var: lt_result
+
+    - name: Update Auto Scaling Group with new Launch Template
+      ec2_asg:
+        aws_access_key: ABCCSSS
+        aws_secret_key: DDDI&$**)*($#
+        region: ap-south-1
+        name: pwa-test-asg
+        launch_template:
+          launch_template_name: pwa-test-lt
+          version: "{{ lt_result.latest_version }}"
+        min_size: 1
+        max_size: 2
+        desired_capacity: 1
+        vpc_zone_identifier: "{{ subnets | join(',') }}"  # Specify the subnets for the ASG
+
+    - name: Refresh Auto Scaling Group Instances
+      community.aws.autoscaling_instance_refresh:
+        name: pwa-test-asg
+        aws_access_key: ABCCSSS
+        aws_secret_key: DDDI&$**)*($#
+        state: started
+        region: ap-south-1
+        preferences:
+          min_healthy_percentage: 91
+          instance_warmup: 60
